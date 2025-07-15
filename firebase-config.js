@@ -1,5 +1,4 @@
-// js/firebase-config.js
-
+// Firebase v8 Config
 const firebaseConfig = {
   apiKey: "AIzaSyA1Lx114VTqRNU2sM0rfEqwLSuZyoSefqs",
   authDomain: "friends-zone-c2fe8.firebaseapp.com",
