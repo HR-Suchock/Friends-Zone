@@ -8,43 +8,36 @@ auth.onAuthStateChanged(user => {
 
 function createPost() {
   const content = document.getElementById("postContent").value.trim();
-  if (content === "") {
-    alert("Post can't be empty.");
-    return;
-  }
-
-  const user = auth.currentUser;
+  if (content === "") return alert("Post cannot be empty!");
 
   db.collection("posts").add({
-    userId: user.uid,
-    content: content,
+    content,
+    userId: auth.currentUser.uid,
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
   }).then(() => {
     document.getElementById("postContent").value = "";
     loadPosts();
-  }).catch(error => {
-    alert("Error posting: " + error.message);
-  });
+  }).catch(e => alert("Failed to post: " + e.message));
 }
 
 function loadPosts() {
-  db.collection("posts")
-    .orderBy("createdAt", "desc")
-    .limit(20)
-    .get()
+  db.collection("posts").orderBy("createdAt", "desc").limit(20).get()
     .then(snapshot => {
       const feed = document.getElementById("feed");
       feed.innerHTML = "";
       snapshot.forEach(doc => {
         const post = doc.data();
-        const postDiv = document.createElement("div");
-        postDiv.className = "post";
-        postDiv.innerHTML = `
-          <h4>👤 ${post.userId}</h4>
+        const div = document.createElement("div");
+        div.className = "post";
+        div.innerHTML = `
           <p>${post.content}</p>
-          <small>${post.createdAt?.toDate().toLocaleString() || ""}</small>
+          <small>${post.userId.substring(0, 8)} • ${post.createdAt?.toDate().toLocaleString()}</small>
         `;
-        feed.appendChild(postDiv);
+        feed.appendChild(div);
       });
     });
+}
+
+function logout() {
+  auth.signOut().then(() => window.location.href = "login.html");
 }
