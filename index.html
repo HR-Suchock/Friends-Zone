@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
   <title>FriendsZone Feed</title>
   <link rel="stylesheet" href="css/style.css" />
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -9,14 +10,14 @@
   <script src="js/firebase-config.js"></script>
 </head>
 <body>
-  <h1>FriendsZone - News Feed</h1>
-
-  <textarea id="postContent" placeholder="What's on your mind?"></textarea><br>
-  <button onclick="createPost()">Post</button>
-
-  <h2>Recent Posts</h2>
-  <div id="feed"></div>
-
+  <div class="container">
+    <h1>FriendsZone</h1>
+    <textarea id="postContent" placeholder="What's happening?"></textarea>
+    <button onclick="createPost()">Post</button>
+    <h2>Recent Posts</h2>
+    <div id="feed"></div>
+    <button onclick="logout()" style="background:#dc3545;">Log out</button>
+  </div>
   <script src="js/feed.js"></script>
 </body>
 </html>
