@@ -1,35 +1,30 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Signup - FriendsZone</title>
+  <meta charset="UTF-8" />
+  <title>Signup</title>
+  <link rel="stylesheet" href="css/style.css" />
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
   <script src="js/firebase-config.js"></script>
-  <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-  <h2>Sign Up</h2>
-  <input type="email" id="email" placeholder="Enter Email"><br>
-  <input type="password" id="password" placeholder="Enter Password"><br>
-  <button onclick="signup()">Sign Up</button>
-
-  <p>Already have an account? <a href="login.html">Login</a></p>
+  <div class="container">
+    <h2>Create Account</h2>
+    <input id="email" type="email" placeholder="Email" />
+    <input id="password" type="password" placeholder="Password" />
+    <button onclick="signup()">Sign Up</button>
+    <p>Already have an account? <a href="login.html" style="color:#1da1f2;">Log in</a></p>
+  </div>
 
   <script>
     function signup() {
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-
-      auth.createUserWithEmailAndPassword(email, password)
-        .then(() => {
-          alert("Signup successful");
-          window.location.href = "index.html";
-        })
-        .catch(error => {
-          alert("Error: " + error.message);
-          console.error(error);
-        });
+      const email = document.getElementById("email").value;
+      const pass = document.getElementById("password").value;
+      auth.createUserWithEmailAndPassword(email, pass)
+        .then(() => window.location.href = "index.html")
+        .catch(e => alert(e.message));
     }
   </script>
 </body>
