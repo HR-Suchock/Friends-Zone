@@ -2,30 +2,149 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Signup</title>
-  <link rel="stylesheet" href="css/style.css" />
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-  <script src="js/firebase-config.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NexLink Signup</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f0f2f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .form-container {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      width: 320px;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #333;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    .password-wrapper {
+      position: relative;
+      margin-top: 10px;
+    }
+    .password-wrapper svg {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      fill: #333;
+      width: 20px;
+      height: 20px;
+    }
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 10px;
+      background: #42b72a;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background: #369921;
+    }
+    .switch-link {
+      text-align: center;
+      margin-top: 15px;
+      font-size: 14px;
+      color: #555;
+    }
+    .switch-link a {
+      color: #42b72a;
+      text-decoration: none;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Create Account</h2>
-    <input id="email" type="email" placeholder="Email" />
-    <input id="password" type="password" placeholder="Password" />
-    <button onclick="signup()">Sign Up</button>
-    <p>Already have an account? <a href="login.html" style="color:#1da1f2;">Log in</a></p>
+  <div class="form-container">
+    <h2>Create NexLink Account</h2>
+    <form id="signupForm">
+      <input type="email" id="email" placeholder="Email" required />
+      
+      <div class="password-wrapper">
+        <input type="password" id="password" placeholder="Password" required />
+        <svg id="togglePassword" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+          <path d="M10 6.667q.688 0 1.177.49.49.489.49 1.176 0 .688-.49 1.177-.489.49-1.177.49-.687 0-1.177-.49-.49-.489-.49-1.177 0-.687.49-1.176.49-.49 1.177-.49Zm0 6.25q1.771 0 3.229-1.01 1.459-1.01 2.188-2.573-.729-1.562-2.188-2.572-1.458-1.01-3.229-1.01-1.77 0-3.229 1.01-1.458 1.01-2.187 2.572.729 1.563 2.187 2.573 1.459 1.01 3.229 1.01ZM10 10Zm0 5.417q-2.396 0-4.521-1.354Q3.354 12.708 2.5 10q.854-2.708 2.979-4.063Q7.604 4.583 10 4.583q2.396 0 4.521 1.354Q16.646 7.292 17.5 10q-.854 2.708-2.979 4.063Q12.396 15.417 10 15.417Z"/>
+        </svg>
+      </div>
+
+      <input type="password" id="confirmPassword" placeholder="Confirm Password" required />
+      
+      <button type="submit">Sign Up</button>
+    </form>
+
+    <p class="switch-link">
+      Already have an account? <a href="login.html">Login</a>
+    </p>
   </div>
 
-  <script>
-    function signup() {
-      const email = document.getElementById("email").value;
-      const pass = document.getElementById("password").value;
-      auth.createUserWithEmailAndPassword(email, pass)
-        .then(() => window.location.href = "index.html")
-        .catch(e => alert(e.message));
-    }
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA1Lx114VTqRNU2sM0rfEqwLSuZyoSefqs",
+      authDomain: "friends-zone-c2fe8.firebaseapp.com",
+      projectId: "friends-zone-c2fe8",
+      storageBucket: "friends-zone-c2fe8.firebasestorage.app",
+      messagingSenderId: "962940178101",
+      appId: "1:962940178101:web:330aa526d4e7b012dff8fc",
+      measurementId: "G-VPGKVYTKD1"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordField = document.getElementById('password');
+
+    togglePassword.addEventListener('click', () => {
+      const type = passwordField.type === 'password' ? 'text' : 'password';
+      passwordField.type = type;
+    });
+
+    document.getElementById('signupForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const email = document.getElementById('email').value.trim();
+      const password = passwordField.value.trim();
+      const confirmPassword = document.getElementById('confirmPassword').value.trim();
+
+      if (password !== confirmPassword) {
+        alert("Passwords do not match!");
+        return;
+      }
+
+      try {
+        await createUserWithEmailAndPassword(auth, email, password);
+        window.location.href = "profile-setup.html";
+      } catch (error) {
+        alert("Signup failed: " + error.message);
+      }
+    });
   </script>
 </body>
 </html>
