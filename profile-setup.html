@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Profile Setup | NexLink</title>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA1Lx114VTqRNU2sM0rfEqwLSuZyoSefqs",
+      authDomain: "friends-zone-c2fe8.firebaseapp.com",
+      projectId: "friends-zone-c2fe8",
+      storageBucket: "friends-zone-c2fe8.firebasestorage.app",
+      messagingSenderId: "962940178101",
+      appId: "1:962940178101:web:330aa526dff8fc",
+      measurementId: "G-VPGKVYTKD1"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const storage = getStorage(app);
+
+    document.addEventListener("DOMContentLoaded", () => {
+      let currentUserId = null;
+      let profilePicFile = null;
+
+      const form = document.getElementById("profileForm");
+      const profilePicInput = document.getElementById("profilePic");
+      const profilePicPreview = document.getElementById("profilePicPreview");
+
+      onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+          alert("You must be logged in.");
+          window.location.href = "login.html";
+          return;
+        }
+        currentUserId = user.uid;
+        await loadProfileData(currentUserId);
+      });
+
+      profilePicInput.addEventListener("change", (e) => {
+        profilePicFile = e.target.files[0];
+        if (profilePicFile) {
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            profilePicPreview.src = ev.target.result;
+          };
+          reader.readAsDataURL(profilePicFile);
+        }
+      });
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        if (!currentUserId) {
+          alert("User not authenticated!");
+          return;
+        }
+
+        try {
+          let photoURL = "";
+
+          if (profilePicFile) {
+            const storageRef = ref(storage, `profilePics/${currentUserId}`);
+            await uploadBytes(storageRef, profilePicFile);
+            photoURL = await getDownloadURL(storageRef);
+          } else {
+            const docSnap = await getDoc(doc(db, "users", currentUserId));
+            if (docSnap.exists()) {
+              photoURL = docSnap.data().photoURL || "";
+            }
+          }
+
+          const data = {
+            name: form.name.value.trim(),
+            nickname: form.nickname.value.trim(),
+            bio: form.bio.value.trim(),
+            workplace: form.workplace.value.trim(),
+            relationship: form.relationship.value,
+            region: form.region.value.trim(),
+            religion: form.religion.value.trim(),
+            contact: form.contact.value.trim(),
+            socials: {
+              facebook: form.facebook.value.trim(),
+              twitter: form.twitter.value.trim(),
+              instagram: form.instagram.value.trim(),
+              linkedin: form.linkedin.value.trim(),
+            },
+            photoURL,
+            updatedAt: new Date(),
+          };
+
+          if (!data.name) {
+            alert("Name is required");
+            return;
+          }
+
+          await setDoc(doc(db, "users", currentUserId), data, { merge: true });
+          alert("Profile saved successfully!");
+          window.location.href = "dashboard.html";
+
+        } catch (error) {
+          console.error("Error saving profile:", error);
+          alert("Failed to save profile: " + error.message);
+        }
+      });
+
+      async function loadProfileData(uid) {
+        try {
+          const docSnap = await getDoc(doc(db, "users", uid));
+          if (docSnap.exists()) {
+            const d = docSnap.data();
+            form.name.value = d.name || "";
+            form.nickname.value = d.nickname || "";
+            form.bio.value = d.bio || "";
+            form.workplace.value = d.workplace || "";
+            form.relationship.value = d.relationship || "Single";
+            form.region.value = d.region || "";
+            form.religion.value = d.religion || "";
+            form.contact.value = d.contact || "";
+            form.facebook.value = d.socials?.facebook || "";
+            form.twitter.value = d.socials?.twitter || "";
+            form.instagram.value = d.socials?.instagram || "";
+            form.linkedin.value = d.socials?.linkedin || "";
+            profilePicPreview.src = d.photoURL || "https://via.placeholder.com/100?text=Profile";
+          } else {
+            profilePicPreview.src = "https://via.placeholder.com/100?text=Profile";
+          }
+        } catch (error) {
+          console.error("Error loading profile:", error);
+        }
+      }
+    });
+  </script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: white;
+      color: #111;
+      margin: 0;
+      padding: 2rem 1rem;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .container {
+      background: white;
+      border-radius: 12px;
+      padding: 2rem 2.5rem;
+      max-width: 450px;
+      width: 100%;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      color: #111;
+    }
+    form > div {
+      margin-bottom: 1rem;
+    }
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.3rem;
+      color: #222;
+    }
+    input[type="text"],
+    input[type="url"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 0.5rem 0.7rem;
+      border-radius: 8px;
+      border: 1.5px solid #ccc;
+      font-size: 1rem;
+      resize: vertical;
+      box-sizing: border-box;
+      color: #222;
+      background-color: white;
+      transition: border-color 0.3s ease;
+    }
+    input[type="text"]:focus,
+    input[type="url"]:focus,
+    select:focus,
+    textarea:focus {
+      border-color: #42b72a;
+      outline: none;
+      box-shadow: 0 0 5px rgba(66, 183, 42, 0.5);
+    }
+    textarea {
+      height: 80px;
+    }
+    button {
+      width: 100%;
+      padding: 0.7rem;
+      font-size: 1.1rem;
+      border: none;
+      border-radius: 8px;
+      background-color: #42b72a;
+      color: white;
+      cursor: pointer;
+      font-weight: 700;
+      margin-top: 1rem;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #379920;
+    }
+    .profile-pic-wrapper {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+    #profilePicPreview {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #42b72a;
+      display: block;
+      margin: 0 auto 0.7rem;
+      background: #eee;
+    }
+    input[type="file"] {
+      display: block;
+      margin: 0 auto;
+      cursor: pointer;
+      color: #222;
+    }
+    select {
+      background-color: white;
+      color: #222;
+    }
+    fieldset {
+      border: 1.5px solid #ccc;
+      border-radius: 8px;
+      padding: 12px 14px;
+    }
+    legend {
+      color: #444;
+      font-weight: 600;
+    }
+    small {
+      color: #666;
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Setup Your Profile</h2>
+    <form id="profileForm">
+      <div class="profile-pic-wrapper">
+        <img id="profilePicPreview" src="https://via.placeholder.com/100?text=Profile" alt="Profile Picture Preview" />
+        <input type="file" id="profilePic" accept="image/*" />
+      </div>
+
+      <div>
+        <label for="name">Full Name *</label>
+        <input type="text" id="name" name="name" placeholder="Your full name" required />
+      </div>
+
+      <div>
+        <label for="nickname">Nickname</label>
+        <input type="text" id="nickname" name="nickname" placeholder="Nickname (optional)" />
+      </div>
+
+      <div>
+        <label for="bio">Bio</label>
+        <textarea id="bio" name="bio" placeholder="Tell something about yourself"></textarea>
+      </div>
+
+      <div>
+        <label for="workplace">Workplace</label>
+        <input type="text" id="workplace" name="workplace" placeholder="Where do you work?" />
+      </div>
+
+      <div>
+        <label for="relationship">Relationship Status</label>
+        <select id="relationship" name="relationship">
+          <option value="Single">Single</option>
+          <option value="In a relationship">In a relationship</option>
+          <option value="Married">Married</option>
+          <option value="Complicated">Complicated</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="region">Region</label>
+        <input type="text" id="region" name="region" placeholder="Your region or city" />
+      </div>
+
+      <div>
+        <label for="religion">Religion</label>
+        <input type="text" id="religion" name="religion" placeholder="Your religion (optional)" />
+      </div>
+
+      <div>
+        <label for="contact">Contact Info</label>
+        <input type="text" id="contact" name="contact" placeholder="Phone or email" />
+      </div>
+
+      <fieldset>
+        <legend>Social Media Links (Optional)</legend>
+
+        <div>
+          <label for="facebook">Facebook</label>
+          <input type="url" id="facebook" name="facebook" placeholder="https://facebook.com/yourprofile" />
+        </div>
+        <div>
+          <label for="twitter">Twitter</label>
+          <input type="url" id="twitter" name="twitter" placeholder="https://twitter.com/yourprofile" />
+        </div>
+        <div>
+          <label for="instagram">Instagram</label>
+          <input type="url" id="instagram" name="instagram" placeholder="https://instagram.com/yourprofile" />
+        </div>
+        <div>
+          <label for="linkedin">LinkedIn</label>
+          <input type="url" id="linkedin" name="linkedin" placeholder="https://linkedin.com/in/yourprofile" />
+        </div>
+      </fieldset>
+
+      <button type="submit">Save Profile</button>
+    </form>
+  </div>
+</body>
+</html>
